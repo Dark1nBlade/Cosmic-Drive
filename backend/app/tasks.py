@@ -2,6 +2,7 @@ from celery import Celery
 import os
 import time
 import random
+from datetime import datetime
 from .models import models
 from .core.database import SessionLocal
 
@@ -47,10 +48,27 @@ def deploy_policy_task(policy_id: int, edge_ids: list):
     try:
         policy = db.query(models.Policy).filter(models.Policy.id == policy_id).first()
         if not policy: return "Policy not found"
+
+        policy.status = models.PolicyStatus.DEPLOYING
+        db.commit()
+
+        success_count = 0
         for edge_id in edge_ids:
             edge = db.query(models.EdgeDevice).filter(models.EdgeDevice.id == edge_id).first()
             if edge:
+                # Simulate vendor API latency
                 time.sleep(1)
-        return f"Policy {policy.name} deployed"
+                success_count += 1
+
+        policy.status = models.PolicyStatus.DEPLOYED
+        policy.last_deployed_at = datetime.utcnow()
+        db.commit()
+
+        return f"Policy {policy.name} deployed to {success_count} edges"
+    except Exception as e:
+        if policy:
+            policy.status = models.PolicyStatus.FAILED
+            db.commit()
+        return f"Policy deployment failed: {str(e)}"
     finally:
         db.close()

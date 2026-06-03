@@ -21,6 +21,12 @@ class DeviceStatus(str, enum.Enum):
     PRODUCTION = "production"
     VALIDATED = "validated"
 
+class PolicyStatus(str, enum.Enum):
+    DRAFT = "draft"
+    DEPLOYING = "deploying"
+    DEPLOYED = "deployed"
+    FAILED = "failed"
+
 class EdgeDevice(Base):
     __tablename__ = "edge_devices"
 
@@ -44,10 +50,10 @@ class WANLink(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("edge_devices.id"))
-    transport = Column(String) # mpls, broadband, lte, 5g
+    transport = Column(String)
     provider = Column(String)
     circuit_id = Column(String)
-    bandwidth_up = Column(Float) # in Mbps
+    bandwidth_up = Column(Float)
     bandwidth_down = Column(Float)
 
     device = relationship("EdgeDevice", back_populates="wan_links")
@@ -59,7 +65,7 @@ class Overlay(Base):
     device_id = Column(Integer, ForeignKey("edge_devices.id"))
     color = Column(String)
     encryption_domain = Column(String)
-    auth_type = Column(String) # psk, certificate
+    auth_type = Column(String)
 
     device = relationship("EdgeDevice", back_populates="overlays")
 
@@ -69,8 +75,10 @@ class Policy(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String)
-    definition = Column(JSON) # Stores traffic steering, SLA, security rules
+    definition = Column(JSON)
+    status = Column(Enum(PolicyStatus), default=PolicyStatus.DRAFT)
     created_at = Column(DateTime, default=datetime.utcnow)
+    last_deployed_at = Column(DateTime, nullable=True)
 
 class TestResult(Base):
     __tablename__ = "test_results"
@@ -78,7 +86,7 @@ class TestResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     source_device_id = Column(Integer, ForeignKey("edge_devices.id"))
     target_device_id = Column(Integer, ForeignKey("edge_devices.id"))
-    test_type = Column(String) # ping, iperf, http
+    test_type = Column(String)
     latency = Column(Float)
     jitter = Column(Float)
     loss = Column(Float)

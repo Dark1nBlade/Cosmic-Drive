@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
-from ..models.models import VendorType, DeviceStatus
+from ..models.models import VendorType, DeviceStatus, PolicyStatus
 
 class WANLinkBase(BaseModel):
     transport: str
@@ -62,7 +62,9 @@ class PolicyCreate(PolicyBase):
 
 class Policy(PolicyBase):
     id: int
+    status: PolicyStatus
     created_at: datetime
+    last_deployed_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
 class TestResultBase(BaseModel):
