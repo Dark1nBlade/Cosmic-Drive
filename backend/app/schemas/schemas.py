@@ -1,7 +1,28 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
-from ..models.models import VendorType, DeviceStatus, PolicyStatus
+from ..models.models import VendorType, DeviceStatus, PolicyStatus, ControllerStatus
+
+class ControllerBase(BaseModel):
+    name: str
+    vendor_type: VendorType
+    hostname: str
+    port: int = 443
+    username: Optional[str] = None
+    use_ssl: str = "true"
+    verify_ssl: str = "true"
+    proxy_url: Optional[str] = None
+
+class ControllerCreate(ControllerBase):
+    password: Optional[str] = None
+    api_key: Optional[str] = None
+
+class Controller(ControllerBase):
+    id: int
+    status: ControllerStatus
+    last_sync: Optional[datetime] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
 class WANLinkBase(BaseModel):
     transport: str

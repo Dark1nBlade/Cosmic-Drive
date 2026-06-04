@@ -27,6 +27,29 @@ class PolicyStatus(str, enum.Enum):
     DEPLOYED = "deployed"
     FAILED = "failed"
 
+class ControllerStatus(str, enum.Enum):
+    ONLINE = "online"
+    OFFLINE = "offline"
+    ERROR = "error"
+
+class Controller(Base):
+    __tablename__ = "controllers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    vendor_type = Column(Enum(VendorType))
+    hostname = Column(String)
+    port = Column(Integer, default=443)
+    username = Column(String, nullable=True)
+    password = Column(String, nullable=True)  # Should be encrypted
+    api_key = Column(String, nullable=True)   # Should be encrypted
+    use_ssl = Column(String, default="true")
+    verify_ssl = Column(String, default="true")
+    proxy_url = Column(String, nullable=True)
+    status = Column(Enum(ControllerStatus), default=ControllerStatus.OFFLINE)
+    last_sync = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class EdgeDevice(Base):
     __tablename__ = "edge_devices"
 

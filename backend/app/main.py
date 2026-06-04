@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .api import edges, policies, tests
+from .api import edges, policies, tests, controllers
 
 app = FastAPI(title="Unified SD-WAN Platform API")
 
@@ -10,3 +10,4 @@ def read_root():
 app.include_router(edges.router, prefix="/api/edges", tags=["edges"])
 app.include_router(policies.router, prefix="/api/policies", tags=["policies"])
 app.include_router(tests.router, prefix="/api/tests", tags=["tests"])
+app.include_router(controllers.router, prefix="/api/controllers", tags=["controllers"])

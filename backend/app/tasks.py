@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 from .models import models
 from .core.database import SessionLocal
+from .services.adapters.vendor_adapters import get_adapter
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
@@ -70,5 +71,56 @@ def deploy_policy_task(policy_id: int, edge_ids: list):
             policy.status = models.PolicyStatus.FAILED
             db.commit()
         return f"Policy deployment failed: {str(e)}"
+    finally:
+        db.close()
+
+@celery_app.task
+def sync_controller_task(controller_id: int):
+    db = SessionLocal()
+    try:
+        controller = db.query(models.Controller).filter(models.Controller.id == controller_id).first()
+        if not controller: return "Controller not found"
+
+        adapter = get_adapter(controller.vendor_type)
+        if not adapter.authenticate({
+            "hostname": controller.hostname,
+            "port": controller.port,
+            "username": controller.username,
+            "password": controller.password,
+            "api_key": controller.api_key,
+            "verify_ssl": controller.verify_ssl == "true"
+        }):
+            controller.status = models.ControllerStatus.ERROR
+            db.commit()
+            return "Auth failed during sync"
+
+        edges = adapter.get_edges()
+        for edge_data in edges:
+            db_edge = db.query(models.EdgeDevice).filter(models.EdgeDevice.uuid == edge_data.uuid).first()
+            if not db_edge:
+                db_edge = models.EdgeDevice(**edge_data.model_dump())
+                db.add(db_edge)
+                db.flush()
+
+            # Update links and overlays
+            links = adapter.get_wan_links(db_edge.uuid)
+            for link_data in links:
+                # Basic idempotency for links
+                existing_link = db.query(models.WANLink).filter(
+                    models.WANLink.device_id == db_edge.id,
+                    models.WANLink.circuit_id == link_data.circuit_id
+                ).first()
+                if not existing_link:
+                    db.add(models.WANLink(**link_data.model_dump(), device_id=db_edge.id))
+
+        controller.status = models.ControllerStatus.ONLINE
+        controller.last_sync = datetime.utcnow()
+        db.commit()
+        return f"Synced {len(edges)} devices from {controller.name}"
+    except Exception as e:
+        if controller:
+            controller.status = models.ControllerStatus.ERROR
+            db.commit()
+        return f"Sync failed: {str(e)}"
     finally:
         db.close()
