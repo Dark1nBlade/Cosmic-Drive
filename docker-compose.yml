@@ -21,6 +21,7 @@ services:
       DATABASE_URL: postgresql://user:password@db/sdwan
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ENCRYPTION_KEY: "SDWAN-PLATFORM-DEFAULT-KEY-DO-NOT-USE-IN-PROD="
     ports:
       - "8000:8000"
     depends_on:
@@ -35,6 +36,7 @@ services:
       DATABASE_URL: postgresql://user:password@db/sdwan
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ENCRYPTION_KEY: "SDWAN-PLATFORM-DEFAULT-KEY-DO-NOT-USE-IN-PROD="
     depends_on:
       - redis
       - db
