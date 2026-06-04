@@ -63,18 +63,24 @@ const TopologyCanvas = () => {
       style: {
         'label': 'data(label)',
         'background-color': (ele: any) => {
-            const health = ele.data('health');
-            if (health > 80) return '#4ade80';
-            if (health > 50) return '#facc15';
-            return '#f87171';
+            const label = ele.data('label').toLowerCase();
+            return label.includes('hub') ? '#6366f1' : '#14b8a6'; // Indigo for Hub, Teal for Branch
         },
-        'color': '#333',
+        'border-width': 3,
+        'border-color': (ele: any) => {
+            const health = ele.data('health');
+            if (health > 80) return '#22c55e'; // Green
+            if (health > 50) return '#eab308'; // Yellow
+            return '#ef4444'; // Red
+        },
+        'color': '#334155',
         'text-valign': 'bottom',
         'text-halign': 'center',
-        'width': 40,
-        'height': 40,
-        'font-size': '10px',
-        'text-margin-y': 5
+        'width': (ele: any) => ele.data('label').toLowerCase().includes('hub') ? 50 : 35,
+        'height': (ele: any) => ele.data('label').toLowerCase().includes('hub') ? 50 : 35,
+        'font-size': '11px',
+        'font-weight': 'bold',
+        'text-margin-y': 8
       }
     },
     {
