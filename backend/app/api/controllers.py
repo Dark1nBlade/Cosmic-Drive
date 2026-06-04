@@ -6,6 +6,7 @@ from ..models import models
 from ..schemas import schemas
 from ..services.adapters.vendor_adapters import get_adapter
 from ..tasks import sync_controller_task
+from ..core.security import encrypt_value, decrypt_value
 import logging
 
 router = APIRouter()
@@ -17,7 +18,13 @@ def get_controllers(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.Controller)
 def create_controller(controller: schemas.ControllerCreate, db: Session = Depends(get_db)):
-    db_controller = models.Controller(**controller.model_dump())
+    data = controller.model_dump()
+    if data.get('password'):
+        data['password'] = encrypt_value(data['password'])
+    if data.get('api_key'):
+        data['api_key'] = encrypt_value(data['api_key'])
+
+    db_controller = models.Controller(**data)
     db.add(db_controller)
     db.commit()
     db.refresh(db_controller)
@@ -47,15 +54,16 @@ def test_controller_connection(controller_id: int, db: Session = Depends(get_db)
 
     adapter = get_adapter(db_controller.vendor_type)
     try:
-        # Pass credentials directly for testing
-        success = adapter.authenticate({
+        # Decrypt credentials for use
+        credentials = {
             "hostname": db_controller.hostname,
             "port": db_controller.port,
             "username": db_controller.username,
-            "password": db_controller.password,
-            "api_key": db_controller.api_key,
+            "password": decrypt_value(db_controller.password),
+            "api_key": decrypt_value(db_controller.api_key),
             "verify_ssl": db_controller.verify_ssl == "true"
-        })
+        }
+        success = adapter.authenticate(credentials)
         if success:
             db_controller.status = models.ControllerStatus.ONLINE
             db.commit()

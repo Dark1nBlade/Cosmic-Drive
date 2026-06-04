@@ -6,6 +6,7 @@ from datetime import datetime
 from .models import models
 from .core.database import SessionLocal
 from .services.adapters.vendor_adapters import get_adapter
+from .core.security import decrypt_value
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
@@ -86,8 +87,8 @@ def sync_controller_task(controller_id: int):
             "hostname": controller.hostname,
             "port": controller.port,
             "username": controller.username,
-            "password": controller.password,
-            "api_key": controller.api_key,
+            "password": decrypt_value(controller.password),
+            "api_key": decrypt_value(controller.api_key),
             "verify_ssl": controller.verify_ssl == "true"
         }):
             controller.status = models.ControllerStatus.ERROR

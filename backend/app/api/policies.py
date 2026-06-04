@@ -14,13 +14,24 @@ def get_policies(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.Policy)
 def create_policy(policy: schemas.PolicyCreate, db: Session = Depends(get_db)):
-    db_policy = models.Policy(**policy.dict())
+    db_policy = models.Policy(**policy.model_dump())
     db.add(db_policy)
     db.commit()
     db.refresh(db_policy)
     return db_policy
 
+class DeploymentRequest(schemas.BaseModel):
+    edge_ids: List[int] = []
+
 @router.post("/{policy_id}/deploy")
-def deploy_policy(policy_id: int, edge_ids: List[int], db: Session = Depends(get_db)):
+def deploy_policy(policy_id: int, request: DeploymentRequest, db: Session = Depends(get_db)):
+    edge_ids = request.edge_ids
+    if not edge_ids:
+        # If no edge_ids provided, deploy to all devices (simplified logic)
+        edge_ids = [e.id for e in db.query(models.EdgeDevice).all()]
+
+    if not edge_ids:
+         raise HTTPException(status_code=400, detail="No edge devices available for deployment")
+
     task = deploy_policy_task.delay(policy_id, edge_ids)
     return {"status": "deployment_started", "job_id": task.id}

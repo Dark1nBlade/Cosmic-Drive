@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Integrations from './pages/Integrations';
 import Sites from './pages/Sites';
 import Policies from './pages/Policies';
+import Tests from './pages/Tests';
 
 // Placeholder components for other pages
 const Placeholder = ({ name }: { name: string }) => (
@@ -30,7 +31,7 @@ function App() {
           <Route path="sites" element={<Sites />} />
           <Route path="topology" element={<div className="h-full"><Dashboard /></div>} />
           <Route path="policies" element={<Policies />} />
-          <Route path="tests" element={<Placeholder name="Synthetic Testing" />} />
+          <Route path="tests" element={<Tests />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="logs" element={<Placeholder name="Logs & Audit" />} />
           <Route path="settings" element={<Placeholder name="System Settings" />} />
