@@ -6,6 +6,15 @@ from .models.models import VendorType, DeviceStatus
 def seed_demo_data():
     db = SessionLocal()
 
+    # Clear existing data for clean demo state
+    db.query(models.TestResult).delete()
+    db.query(models.Overlay).delete()
+    db.query(models.WANLink).delete()
+    db.query(models.EdgeDevice).delete()
+    db.query(models.Policy).delete()
+    db.query(models.Controller).delete()
+    db.commit()
+
     # 1. Hubs
     hubs = [
         {"uuid": "hub-us-east", "hostname": "Hub-US-East", "site_id": "DC-1", "vendor_type": VendorType.CISCO, "model": "vEdge-5000", "serial": "HUB001", "lat": 38.8951, "lng": -77.0364},
