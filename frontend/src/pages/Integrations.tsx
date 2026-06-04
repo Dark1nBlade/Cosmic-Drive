@@ -14,7 +14,6 @@ import {
 const Integrations = () => {
   const [controllers, setControllers] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const fetchControllers = async () => {
     try {

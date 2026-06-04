@@ -1,27 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-  Zap,
   Play,
-  History,
-  CheckCircle2,
-  XCircle,
-  Activity
+  History
 } from 'lucide-react';
 
 const Tests = () => {
   const [results, setResults] = useState<any[]>([]);
-  const [edges, setEdges] = useState<any[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [resultsRes, edgesRes] = await Promise.all([
-        axios.get('/api/tests/results'),
-        axios.get('/api/edges/')
+      const [resultsRes] = await Promise.all([
+        axios.get('/api/tests/results')
       ]);
       setResults(resultsRes.data);
-      setEdges(edgesRes.data);
     } catch (err) {
       console.error("Failed to fetch test data", err);
     }

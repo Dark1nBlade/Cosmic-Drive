@@ -4,8 +4,6 @@ import {
   Plus,
   Search,
   MapPin,
-  Activity,
-  ExternalLink,
   MoreVertical,
   Filter
 } from 'lucide-react';
