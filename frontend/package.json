@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://backend:8000",
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/postcss": "^4.3.0",

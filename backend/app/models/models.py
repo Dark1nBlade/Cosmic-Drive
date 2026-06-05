@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON, Enum, DateTime, Table
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
-
-Base = declarative_base()
+from ..core.database import Base
 
 class VendorType(str, enum.Enum):
     CISCO = "cisco"
